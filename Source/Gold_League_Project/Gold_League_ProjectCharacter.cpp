@@ -82,6 +82,7 @@ AGold_League_ProjectCharacter::AGold_League_ProjectCharacter()
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+
 }
 
 void AGold_League_ProjectCharacter::BeginPlay()
@@ -154,7 +155,7 @@ void AGold_League_ProjectCharacter::OnFire()
 			}
 			else
 			{
-				const FRotator SpawnRotation = GetControlRotation();
+				const FRotator SpawnRotation = FirstPersonCameraComponent->GetComponentRotation();
 				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
 				const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
 

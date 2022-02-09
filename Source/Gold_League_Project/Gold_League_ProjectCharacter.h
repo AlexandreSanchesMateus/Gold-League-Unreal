@@ -51,6 +51,7 @@ class AGold_League_ProjectCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMotionControllerComponent* L_MotionController;
 
+
 public:
 	AGold_League_ProjectCharacter();
 
