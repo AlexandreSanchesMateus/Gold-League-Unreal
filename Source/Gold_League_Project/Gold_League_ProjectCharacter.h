@@ -19,10 +19,6 @@ class AGold_League_ProjectCharacter : public ACharacter
 {
 	GENERATED_BODY()
 
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(VisibleDefaultsOnly, Category=Mesh)
-	USkeletalMeshComponent* Mesh1P;
-
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(VisibleDefaultsOnly, Category = Mesh)
 	USkeletalMeshComponent* FP_Gun;
@@ -51,8 +47,13 @@ class AGold_League_ProjectCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMotionControllerComponent* L_MotionController;
 
+
 public:
 	AGold_League_ProjectCharacter();
+
+	/** Pawn mesh: 1st person view (arms; seen only by self) */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Mesh)
+	USkeletalMeshComponent* Mesh1P;
 
 protected:
 	virtual void BeginPlay();
@@ -85,6 +86,9 @@ public:
 	/** Whether to use motion controller location for aiming. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	uint8 bUsingMotionControllers : 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsBlocked;
 
 protected:
 	

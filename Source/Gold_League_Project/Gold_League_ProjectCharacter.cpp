@@ -9,6 +9,7 @@
 #include "GameFramework/InputSettings.h"
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 #include "MotionControllerComponent.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
@@ -82,6 +83,7 @@ AGold_League_ProjectCharacter::AGold_League_ProjectCharacter()
 
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
+
 }
 
 void AGold_League_ProjectCharacter::BeginPlay()
@@ -140,50 +142,50 @@ void AGold_League_ProjectCharacter::SetupPlayerInputComponent(class UInputCompon
 
 void AGold_League_ProjectCharacter::OnFire()
 {
-	// try and fire a projectile
-	if (ProjectileClass != nullptr)
-	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
+	UWorld* const World = GetWorld();
+	if (World != nullptr)
+	{ 
+		if (!IsBlocked)
 		{
-			if (bUsingMotionControllers)
+			FHitResult Hit;
+			FVector Start = FirstPersonCameraComponent->GetComponentLocation();
+			FVector End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
+
+			FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), false, this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, TraceParams);
+			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
+
+			ACharacter* Enemy = Cast<ACharacter>(Hit.GetActor());
+			if (bHit && Enemy != nullptr)
 			{
-				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
-				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<AGold_League_ProjectProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
+				UE_LOG(LogTemp, Warning, TEXT("Enemy hit"));
 			}
 			else
 			{
-				const FRotator SpawnRotation = GetControlRotation();
-				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-				const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+				UE_LOG(LogTemp, Warning, TEXT("Nothing"));
+			}
 
-				//Set Spawn Collision Handling Override
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-				// spawn the projectile at the muzzle
-				World->SpawnActor<AGold_League_ProjectProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
+			// try and play the sound if specified
+			if (FireSound != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+			}
+
+			// try and play a firing animation if specified
+			if (FireAnimation != nullptr)
+			{
+				// Get the animation object for the arms mesh
+				UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+				if (AnimInstance != nullptr)
+				{
+					AnimInstance->Montage_Play(FireAnimation, 1.f);
+				}
 			}
 		}
 	}
 
-	// try and play the sound if specified
-	if (FireSound != nullptr)
-	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-	}
-
-	// try and play a firing animation if specified
-	if (FireAnimation != nullptr)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != nullptr)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
+	
 }
 
 void AGold_League_ProjectCharacter::OnResetVR()
