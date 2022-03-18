@@ -87,6 +87,7 @@ AGold_League_ProjectCharacter::AGold_League_ProjectCharacter()
 	DamageAmount = 51;
 	MaxAmmo = 8;
 	CurrentAmmo = MaxAmmo;
+	Health = 100.f;
 }
 
 void AGold_League_ProjectCharacter::BeginPlay()

@@ -99,6 +99,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	int32 CurrentAmmo;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
+	float Health;
+
 protected:
 	
 	/** Fires a linetrace. */
