@@ -84,6 +84,9 @@ AGold_League_ProjectCharacter::AGold_League_ProjectCharacter()
 	// Uncomment the following line to turn motion controllers on by default:
 	//bUsingMotionControllers = true;
 
+	DamageAmount = 51;
+	MaxAmmo = 8;
+	CurrentAmmo = MaxAmmo;
 }
 
 void AGold_League_ProjectCharacter::BeginPlay()
@@ -127,6 +130,8 @@ void AGold_League_ProjectCharacter::SetupPlayerInputComponent(class UInputCompon
 
 	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AGold_League_ProjectCharacter::OnResetVR);
 
+	PlayerInputComponent->BindAction("Reload", IE_Pressed, this, &AGold_League_ProjectCharacter::Reload);
+
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AGold_League_ProjectCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AGold_League_ProjectCharacter::MoveRight);
@@ -138,6 +143,7 @@ void AGold_League_ProjectCharacter::SetupPlayerInputComponent(class UInputCompon
 	PlayerInputComponent->BindAxis("TurnRate", this, &AGold_League_ProjectCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AGold_League_ProjectCharacter::LookUpAtRate);
+
 }
 
 void AGold_League_ProjectCharacter::OnFire()
@@ -147,46 +153,67 @@ void AGold_League_ProjectCharacter::OnFire()
 	{ 
 		if (!IsBlocked)
 		{
-			FHitResult Hit;
-			FVector Start = FirstPersonCameraComponent->GetComponentLocation();
-			FVector End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
-
-			FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), false, this);
-			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Pawn, TraceParams);
-			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
-
-			ACharacter* Enemy = Cast<ACharacter>(Hit.GetActor());
-			if (bHit && Enemy != nullptr)
+			if (CurrentAmmo > 0)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Enemy hit"));
-			}
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Nothing"));
-			}
+				FHitResult Hit;
+				FVector Start = FirstPersonCameraComponent->GetComponentLocation();
+				FVector End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
 
+				FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), true, this);
+				bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+				DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
 
-			// try and play the sound if specified
-			if (FireSound != nullptr)
-			{
-				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-			}
+				int32 damageApply = DamageAmount;
 
-			// try and play a firing animation if specified
-			if (FireAnimation != nullptr)
-			{
-				// Get the animation object for the arms mesh
-				UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-				if (AnimInstance != nullptr)
+				ACharacter* Enemy = Cast<ACharacter>(Hit.GetActor());
+				if (bHit)
 				{
-					AnimInstance->Montage_Play(FireAnimation, 1.f);
+					if (Enemy != nullptr)
+					{
+						FVector playerToEnemy = (Hit.Location - FirstPersonCameraComponent->GetComponentLocation());
+						playerToEnemy.Normalize();
+
+						if (Hit.BoneName == FName("Neck"))
+						{
+							damageApply *= 2;
+						}
+
+						UGameplayStatics::ApplyPointDamage(Enemy, damageApply, playerToEnemy, Hit, nullptr, this, nullptr);
+					}
+					else
+					{
+					}
 				}
+
+
+				// try and play the sound if specified
+				if (FireSound != nullptr)
+				{
+					UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+				}
+
+				// try and play a firing animation if specified
+				if (FireAnimation != nullptr)
+				{
+					// Get the animation object for the arms mesh
+					UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+					if (AnimInstance != nullptr)
+					{
+						AnimInstance->Montage_Play(FireAnimation, 1.f);
+					}
+				}
+
+				CurrentAmmo--;
 			}
 		}
 	}
-
-	
 }
+
+void AGold_League_ProjectCharacter::Reload()
+{
+	CurrentAmmo = MaxAmmo;
+}
+
 
 void AGold_League_ProjectCharacter::OnResetVR()
 {

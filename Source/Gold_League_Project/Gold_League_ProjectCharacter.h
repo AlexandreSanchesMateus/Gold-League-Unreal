@@ -90,10 +90,22 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsBlocked;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	int32 DamageAmount;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	int32 MaxAmmo;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	int32 CurrentAmmo;
+
 protected:
 	
-	/** Fires a projectile. */
+	/** Fires a linetrace. */
 	void OnFire();
+
+	/** Reload CurrentAmmo. */
+	void Reload();
 
 	/** Resets HMD orientation and position in VR. */
 	void OnResetVR();
