@@ -109,6 +109,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Health)
 	float Health;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	float ShotCooldown;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
+	float ShotCooldownMax;
+
 protected:
 	
 	/** Fires a linetrace. */
@@ -137,6 +143,9 @@ protected:
 	 * @param Rate	This is a normalized rate, i.e. 1.0 means 100% of desired turn rate
 	 */
 	void LookUpAtRate(float Rate);
+
+	UFUNCTION()
+	void Tick(float DeltaTime);
 
 	struct TouchData
 	{

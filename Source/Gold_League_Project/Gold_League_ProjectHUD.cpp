@@ -6,6 +6,7 @@
 #include "TextureResource.h"
 #include "CanvasItem.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Gold_League_ProjectCharacter.h"
 
 AGold_League_ProjectHUD::AGold_League_ProjectHUD()
 {
@@ -31,5 +32,17 @@ void AGold_League_ProjectHUD::DrawHUD()
 	// draw the crosshair
 	FCanvasTileItem TileItem( CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
 	TileItem.BlendMode = SE_BLEND_Translucent;
-	Canvas->DrawItem( TileItem );
+
+	AGold_League_ProjectCharacter* player = nullptr; 
+	
+	UWorld* const World = GetWorld();
+	if (World != nullptr)
+	{
+		player = Cast<AGold_League_ProjectCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
+	}
+	if (player != nullptr && !player->IsAiming)
+	{
+		Canvas->DrawItem(TileItem);
+	}
+		
 }

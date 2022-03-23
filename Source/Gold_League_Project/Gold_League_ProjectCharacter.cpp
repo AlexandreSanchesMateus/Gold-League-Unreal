@@ -93,6 +93,8 @@ AGold_League_ProjectCharacter::AGold_League_ProjectCharacter()
 	MaxAmmo = 8;
 	CurrentAmmo = MaxAmmo;
 	Health = 100.f;
+	ShotCooldownMax = 1.f;
+	ShotCooldown = ShotCooldownMax;
 }
 
 void AGold_League_ProjectCharacter::BeginPlay()
@@ -156,73 +158,83 @@ void AGold_League_ProjectCharacter::OnFire()
 {
 	UWorld* const World = GetWorld();
 	if (World != nullptr)
-	{ 
-		if (!IsBlocked)
+	{
+		if (CurrentAmmo > 0 && !IsBlocked && ShotCooldown >= ShotCooldownMax)
 		{
-			if (CurrentAmmo > 0)
+			FHitResult Hit;
+			FVector Start;
+			FVector End;
+			if (IsAiming)
 			{
-				FHitResult Hit;
-				FVector Start;
-				FVector End;
-				if (IsAiming)
+				Hit;
+				Start = FP_MuzzleLocation->GetComponentLocation();
+				End = FP_MuzzleLocation->GetComponentLocation() + (FP_MuzzleLocation->GetForwardVector() * 2000);
+			}
+			else
+			{
+				Hit;
+				Start = FirstPersonCameraComponent->GetComponentLocation();
+				End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
+			}
+
+			FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), true, this);
+			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
+			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
+
+			int32 damageApply = DamageAmount;
+
+			ACharacter* Enemy = Cast<ACharacter>(Hit.GetActor());
+			if (bHit)
+			{
+				if (Enemy != nullptr)
 				{
-					Hit;
-					Start = InterCam->GetComponentLocation();
-					End = InterCam->GetComponentLocation() + (InterCam->GetForwardVector() * 2000);
+					FVector playerToEnemy = (Hit.Location - FirstPersonCameraComponent->GetComponentLocation());
+					playerToEnemy.Normalize();
+
+					if (Hit.BoneName == FName("Neck"))
+					{
+						damageApply *= 2;
+					}
+
+					UGameplayStatics::ApplyPointDamage(Enemy, damageApply, playerToEnemy, Hit, nullptr, this, nullptr);
 				}
 				else
 				{
-					Hit;
-					Start = FirstPersonCameraComponent->GetComponentLocation();
-					End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
 				}
-
-				FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), true, this);
-				bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
-				DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
-
-				int32 damageApply = DamageAmount;
-
-				ACharacter* Enemy = Cast<ACharacter>(Hit.GetActor());
-				if (bHit)
-				{
-					if (Enemy != nullptr)
-					{
-						FVector playerToEnemy = (Hit.Location - FirstPersonCameraComponent->GetComponentLocation());
-						playerToEnemy.Normalize();
-
-						if (Hit.BoneName == FName("Neck"))
-						{
-							damageApply *= 2;
-						}
-
-						UGameplayStatics::ApplyPointDamage(Enemy, damageApply, playerToEnemy, Hit, nullptr, this, nullptr);
-					}
-					else
-					{
-					}
-				}
-
-
-				// try and play the sound if specified
-				if (FireSound != nullptr)
-				{
-					UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-				}
-
-				// try and play a firing animation if specified
-				if (FireAnimation != nullptr)
-				{
-					// Get the animation object for the arms mesh
-					UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-					if (AnimInstance != nullptr)
-					{
-						AnimInstance->Montage_Play(FireAnimation, 1.f);
-					}
-				}
-
-				CurrentAmmo--;
 			}
+
+
+			// try and play the sound if specified
+			if (FireSound != nullptr)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+			}
+
+			// try and play a firing animation if specified
+			if (FireAnimation != nullptr)
+			{
+				// Get the animation object for the arms mesh
+				UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
+				if (AnimInstance != nullptr)
+				{
+					AnimInstance->Montage_Play(FireAnimation, 1.f);
+				}
+			}
+
+			CurrentAmmo--;
+			ShotCooldown = 0;
+		}
+	}
+}
+
+void AGold_League_ProjectCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	if (GetWorld() != nullptr)
+	{
+		if (ShotCooldown < ShotCooldownMax)
+		{
+			ShotCooldown += GetWorld()->GetDeltaSeconds();
 		}
 	}
 }
