@@ -33,6 +33,11 @@ AGold_League_ProjectCharacter::AGold_League_ProjectCharacter()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-39.56f, 1.75f, 64.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 
+	InterCam = CreateDefaultSubobject<UCameraComponent>(TEXT("InterCam"));
+	InterCam->SetupAttachment(FirstPersonCameraComponent);
+	InterCam->SetRelativeLocation(FirstPersonCameraComponent->GetComponentLocation()); // Position the camera
+	InterCam->bUsePawnControlRotation = true;
+
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
 	Mesh1P->SetOnlyOwnerSee(true);
@@ -157,8 +162,20 @@ void AGold_League_ProjectCharacter::OnFire()
 			if (CurrentAmmo > 0)
 			{
 				FHitResult Hit;
-				FVector Start = FirstPersonCameraComponent->GetComponentLocation();
-				FVector End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
+				FVector Start;
+				FVector End;
+				if (IsAiming)
+				{
+					Hit;
+					Start = InterCam->GetComponentLocation();
+					End = InterCam->GetComponentLocation() + (InterCam->GetForwardVector() * 2000);
+				}
+				else
+				{
+					Hit;
+					Start = FirstPersonCameraComponent->GetComponentLocation();
+					End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
+				}
 
 				FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), true, this);
 				bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);

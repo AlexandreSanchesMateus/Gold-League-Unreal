@@ -39,6 +39,10 @@ class AGold_League_ProjectCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	UCameraComponent* FirstPersonCameraComponent;
 
+	/** Cam for aim using interpolation */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	UCameraComponent* InterCam;
+
 	/** Motion controller (right hand) */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, meta = (AllowPrivateAccess = "true"))
 	UMotionControllerComponent* R_MotionController;
@@ -89,6 +93,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool IsBlocked;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool IsAiming;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Weapon)
 	int32 DamageAmount;
