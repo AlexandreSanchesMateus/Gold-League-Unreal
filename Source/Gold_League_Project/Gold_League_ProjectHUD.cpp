@@ -30,7 +30,7 @@ void AGold_League_ProjectHUD::DrawHUD()
 										   (Center.Y - 8.f));
 
 	// draw the crosshair
-	FCanvasTileItem TileItem( CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
+	FCanvasTileItem TileItem(CrosshairDrawPosition, CrosshairTex->Resource, FLinearColor::White);
 	TileItem.BlendMode = SE_BLEND_Translucent;
 
 	AGold_League_ProjectCharacter* player = nullptr; 
@@ -39,10 +39,10 @@ void AGold_League_ProjectHUD::DrawHUD()
 	if (World != nullptr)
 	{
 		player = Cast<AGold_League_ProjectCharacter>(GetWorld()->GetFirstPlayerController()->GetPawn());
-	}
-	if (player != nullptr && !player->IsAiming)
-	{
-		Canvas->DrawItem(TileItem);
-	}
-		
+		if (player != nullptr && !player->IsAiming)
+		{
+			Canvas->DrawItem(TileItem);
+		}
+	}		
 }
+

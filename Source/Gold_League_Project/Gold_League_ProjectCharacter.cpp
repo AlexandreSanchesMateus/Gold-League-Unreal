@@ -168,13 +168,13 @@ void AGold_League_ProjectCharacter::OnFire()
 			{
 				Hit;
 				Start = FP_MuzzleLocation->GetComponentLocation();
-				End = FP_MuzzleLocation->GetComponentLocation() + (FP_MuzzleLocation->GetForwardVector() * 2000);
+				End = FP_MuzzleLocation->GetComponentLocation() + (FP_MuzzleLocation->GetForwardVector() * 20000);
 			}
 			else
 			{
 				Hit;
 				Start = FirstPersonCameraComponent->GetComponentLocation();
-				End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 2000);
+				End = FirstPersonCameraComponent->GetComponentLocation() + (FirstPersonCameraComponent->GetForwardVector() * 20000);
 			}
 
 			FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), true, this);
