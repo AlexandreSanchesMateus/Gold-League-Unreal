@@ -179,7 +179,7 @@ void AGold_League_ProjectCharacter::OnFire()
 
 			FCollisionQueryParams TraceParams = FCollisionQueryParams(FName(TEXT("Trace")), true, this);
 			bool bHit = GetWorld()->LineTraceSingleByChannel(Hit, Start, End, ECC_Visibility, TraceParams);
-			DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
+			//DrawDebugLine(GetWorld(), Start, End, FColor::Red, false, 2.0f);
 
 			int32 damageApply = DamageAmount;
 
